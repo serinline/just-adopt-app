@@ -12,7 +12,7 @@
 	<artifactId>just-adopt</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>just-adopt</name>
-	<description>animal shelter</description>
+	<description>pet shelter</description>
 	<properties>
 		<java.version>11</java.version>
 	</properties>
