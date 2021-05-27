@@ -91,7 +91,6 @@ public class AuthController {
             strRoles.forEach(role -> {
                 if ("admin".equals(role)) {
                     roles.add(Role.ROLE_ADMIN);
-                } else {
                     roles.add(Role.ROLE_USER);
                 }
             });

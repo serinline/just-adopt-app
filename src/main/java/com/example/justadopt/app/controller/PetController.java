@@ -1,12 +1,16 @@
 package com.example.justadopt.app.controller;
 
 import com.example.justadopt.app.model.Pet;
+import com.example.justadopt.app.model.Type;
 import com.example.justadopt.app.repository.PetRepository;
+import com.example.justadopt.app.service.PetService;
+import com.example.justadopt.payload.request.PetRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,6 +22,8 @@ public class PetController {
 
     @Autowired
     private PetRepository petRepository;
+    @Autowired
+    private PetService petService;
 
     @GetMapping("/all")
     public ResponseEntity<List<Pet>> getAllPets() {
@@ -31,17 +37,46 @@ public class PetController {
         }
     }
 
+    @GetMapping("/all/{type}")
+    public ResponseEntity<List<Pet>> getAllByType(@PathVariable("type") String type) {
+        List<Pet> pets;
+        try {
+            if(type.equals("cat")){
+                pets = petRepository.findPetsByType(Type.CAT);
+            } else {
+                pets = petRepository.findPetsByType(Type.DOG);
+            }
+            return pets.isEmpty()
+                    ? new ResponseEntity<>(HttpStatus.NO_CONTENT)
+                    : new ResponseEntity<>(pets, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     @PostMapping("/save")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Pet> newPet(@RequestBody Pet pet) {
+    public ResponseEntity<Pet> newPet(@RequestBody PetRequest pet) {
         try {
             Pet newPet = petRepository.save(Pet.builder()
                                                 .name(pet.getName())
                                                 .age(pet.getAge())
                                                 .description(pet.getDescription())
-                                                .type(pet.getType())
+                                                .type(pet.getType().equals("cat") ? Type.CAT : Type.DOG)
                                                 .build());
             return new ResponseEntity<>(newPet, HttpStatus.CREATED);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PutMapping("/addImage/{name}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<MultipartFile> addImage(@RequestParam("name") String name, @RequestParam("image") MultipartFile image) {
+        try {
+            Optional<Pet> petData = petRepository.findPetByName(name);
+            petService.addImage(petData.get(), image);
+            return ResponseEntity.ok(image);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
