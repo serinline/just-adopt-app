@@ -9,13 +9,11 @@ import javax.validation.Valid;
 
 import com.example.justadopt.security.config.JwtUtils;
 import com.example.justadopt.security.model.Role;
-import com.example.justadopt.security.model.Roles;
 import com.example.justadopt.security.model.User;
 import com.example.justadopt.security.payload.request.LoginRequest;
 import com.example.justadopt.security.payload.request.SignUpRequest;
 import com.example.justadopt.security.payload.response.JwtResponse;
 import com.example.justadopt.security.payload.response.MessageResponse;
-import com.example.justadopt.security.repository.RoleRepository;
 import com.example.justadopt.security.repository.UserRepository;
 import com.example.justadopt.security.service.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,30 +39,25 @@ public class AuthController {
     @Autowired
     UserRepository userRepository;
     @Autowired
-    RoleRepository roleRepository;
-    @Autowired
     PasswordEncoder encoder;
     @Autowired
     JwtUtils jwtUtils;
 
     @PostMapping("/signin")
-    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
-
+    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginUser) {
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
-
+                new UsernamePasswordAuthenticationToken(
+                        loginUser.getUsername(),
+                        loginUser.getPassword()
+                )
+        );
         SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        List<String> roles = userDetails.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList());
-
         return ResponseEntity.ok(JwtResponse.builder()
-                .id(userDetails.getId())
-                .username(userDetails.getUsername())
-                .email(userDetails.getEmail())
-                .roles(roles)
+                .token(jwtUtils.generateJwtToken(authentication))
+                .email(userRepository.findByUsername(loginUser.getUsername()).get().getEmail())
+                .username(loginUser.getUsername())
+                .roles(userRepository.findByUsername(loginUser.getUsername()).get().getRoles()
+                        .stream().map(String::valueOf).collect(Collectors.toList()))
                 .build());
     }
 
@@ -93,19 +86,13 @@ public class AuthController {
         Set<Role> roles = new HashSet<>();
 
         if (strRoles == null) {
-            Role userRole = roleRepository.findByName(Roles.ROLE_USER)
-                    .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-            roles.add(userRole);
+            roles.add(Role.ROLE_USER);
         } else {
             strRoles.forEach(role -> {
                 if ("admin".equals(role)) {
-                    Role adminRole = roleRepository.findByName(Roles.ROLE_ADMIN)
-                            .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-                    roles.add(adminRole);
+                    roles.add(Role.ROLE_ADMIN);
                 } else {
-                    Role userRole = roleRepository.findByName(Roles.ROLE_USER)
-                            .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-                    roles.add(userRole);
+                    roles.add(Role.ROLE_USER);
                 }
             });
         }
