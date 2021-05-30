@@ -5,7 +5,9 @@ import com.example.justadopt.app.model.Type;
 import com.example.justadopt.app.repository.PetRepository;
 import com.example.justadopt.app.service.PetService;
 import com.example.justadopt.payload.request.PetRequest;
+import org.bson.types.Binary;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -54,6 +56,15 @@ public class PetController {
         }
     }
 
+    @GetMapping("/photo/{name}")
+    public ResponseEntity<byte[]> getPhotoOfPet(@PathVariable String name){
+        Binary image = petService.getImage(name);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + name + "\"")
+                .body(image.getData());
+    }
+
     @PostMapping("/save")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Pet> newPet(@RequestBody PetRequest pet) {
@@ -70,9 +81,9 @@ public class PetController {
         }
     }
 
-    @PutMapping("/addImage/{name}")
+    @PostMapping("/addImage/{name}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<MultipartFile> addImage(@RequestParam("name") String name, @RequestParam("image") MultipartFile image) {
+    public ResponseEntity<MultipartFile> addImage(@PathVariable String name, @RequestParam("image") MultipartFile image) {
         try {
             Optional<Pet> petData = petRepository.findPetByName(name);
             petService.addImage(petData.get(), image);
