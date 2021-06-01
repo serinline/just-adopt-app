@@ -56,6 +56,18 @@ public class PetController {
         }
     }
 
+    @GetMapping("/{name}")
+    public ResponseEntity<Pet> getByName(@PathVariable("name") String name) {
+        try {
+            Optional<Pet> pet = petRepository.findPetByName(name);
+            return pet.isEmpty()
+                    ? new ResponseEntity<>(HttpStatus.NO_CONTENT)
+                    : ResponseEntity.ok(pet.get());
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     @GetMapping("/photo/{name}")
     public ResponseEntity<byte[]> getPhotoOfPet(@PathVariable String name){
         Binary image = petService.getImage(name);

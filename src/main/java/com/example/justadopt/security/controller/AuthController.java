@@ -56,8 +56,7 @@ public class AuthController {
                 .token(jwtUtils.generateJwtToken(authentication))
                 .email(userRepository.findByUsername(loginUser.getUsername()).get().getEmail())
                 .username(loginUser.getUsername())
-                .roles(userRepository.findByUsername(loginUser.getUsername()).get().getRoles()
-                        .stream().map(String::valueOf).collect(Collectors.toList()))
+                .isAdmin(userRepository.findByUsername(loginUser.getUsername()).get().isAdmin())
                 .build());
     }
 
@@ -80,6 +79,7 @@ public class AuthController {
                 .username(signUpRequest.getUsername())
                 .email(signUpRequest.getEmail())
                 .password(encoder.encode(signUpRequest.getPassword()))
+                .isAdmin(false)
                 .build();
 
         Set<String> strRoles = signUpRequest.getRoles();
@@ -92,6 +92,7 @@ public class AuthController {
                 if ("admin".equals(role)) {
                     roles.add(Role.ROLE_ADMIN);
                     roles.add(Role.ROLE_USER);
+                    user.setAdmin(true);
                 }
             });
         }
