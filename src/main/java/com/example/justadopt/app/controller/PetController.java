@@ -27,6 +27,10 @@ public class PetController {
     @Autowired
     private PetService petService;
 
+    /**
+     * finds all pets in database
+     * @return ResponseEntity with result
+     */
     @GetMapping("/all")
     public ResponseEntity<List<Pet>> getAllPets() {
         try {
@@ -39,6 +43,11 @@ public class PetController {
         }
     }
 
+    /**
+     * Finds all pets with given type
+     * @param type - type of pets
+     * @return ResponseEntity with result
+     */
     @GetMapping("/all/{type}")
     public ResponseEntity<List<Pet>> getAllByType(@PathVariable("type") String type) {
         List<Pet> pets;
@@ -56,6 +65,11 @@ public class PetController {
         }
     }
 
+    /**
+     * Finds pet by name
+     * @param name - pet's name
+     * @return ResponseEntity with result
+     */
     @GetMapping("/{name}")
     public ResponseEntity<Pet> getByName(@PathVariable("name") String name) {
         try {
@@ -77,6 +91,11 @@ public class PetController {
                 .body(image.getData());
     }
 
+    /**
+     * Adds new Pet
+     * @param pet - new Pet to add
+     * @return ResponseEntity with result
+     */
     @PostMapping("/save")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Pet> newPet(@RequestBody PetRequest pet) {
@@ -93,6 +112,12 @@ public class PetController {
         }
     }
 
+    /**
+     * Adds image to exisitng Pet.
+     * @param name - name of pet to update
+     * @param image - image to add
+     * @return ResponseEntity with result
+     */
     @PostMapping("/addImage/{name}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<MultipartFile> addImage(@PathVariable String name, @RequestParam("image") MultipartFile image) {
@@ -105,6 +130,12 @@ public class PetController {
         }
     }
 
+    /**
+     * Updates Pet.
+     * @param name - name of existing pet to update
+     * @param pet - new Pet
+     * @return ResponseEntity with result
+     */
     @PutMapping("/edit/{name}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Pet> updatePet(@PathVariable("name") String name, @RequestBody Pet pet) {
@@ -130,6 +161,10 @@ public class PetController {
         }
     }
 
+    /**
+     * @param name - name of pet to delete
+     * @return ResponseEntity with result
+     */
     @DeleteMapping("/delete/{name}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<HttpStatus> deletePet(@PathVariable("name") String name) {

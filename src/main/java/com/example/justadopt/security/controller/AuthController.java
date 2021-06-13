@@ -43,6 +43,11 @@ public class AuthController {
     @Autowired
     JwtUtils jwtUtils;
 
+    /**
+     * Authenticates user
+     * @param loginUser - user to authenticate
+     * @return ResponseEntity with result
+     */
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginUser) {
         Authentication authentication = authenticationManager.authenticate(
@@ -60,6 +65,11 @@ public class AuthController {
                 .build());
     }
 
+    /**
+     * adds new user into the database
+     * @param signUpRequest - data of new user
+     * @return ResponseEntity with result
+     */
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignUpRequest signUpRequest) {
         if (userRepository.existsByUsername(signUpRequest.getUsername())) {
