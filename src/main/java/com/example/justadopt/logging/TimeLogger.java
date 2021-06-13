@@ -12,8 +12,8 @@ import org.springframework.util.StopWatch;
 
 @Aspect
 @Component
-public class LoggingAspect {
-    private static final Logger LOGGER = LogManager.getLogger(LoggingAspect.class);
+public class TimeLogger {
+    private static final Logger LOGGER = LogManager.getLogger(TimeLogger.class);
 
     @Pointcut("execution(* com.example.justadopt.app.controller..*(..)))")
     public void requestPetsMethods() {
