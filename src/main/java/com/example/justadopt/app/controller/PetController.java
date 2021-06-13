@@ -43,7 +43,7 @@ public class PetController {
     public ResponseEntity<List<Pet>> getAllByType(@PathVariable("type") String type) {
         List<Pet> pets;
         try {
-            if(type.equals("cat")){
+            if(type.equalsIgnoreCase("cat")){
                 pets = petRepository.findPetsByType(Type.CAT);
             } else {
                 pets = petRepository.findPetsByType(Type.DOG);
@@ -85,7 +85,7 @@ public class PetController {
                                                 .name(pet.getName())
                                                 .age(pet.getAge())
                                                 .description(pet.getDescription())
-                                                .type(pet.getType().equals("cat") ? Type.CAT : Type.DOG)
+                                                .type(pet.getType().equalsIgnoreCase("cat") ? Type.CAT : Type.DOG)
                                                 .build());
             return new ResponseEntity<>(newPet, HttpStatus.CREATED);
         } catch (Exception e) {
